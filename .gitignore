@@ -1,11 +1,83 @@
+# Dependências
 node_modules/
+.pnp/
+.pnp.*
+
+# Build / saída de compilação TypeScript
 dist/
+build/
+out/
+*.tsbuildinfo
+
+# Variáveis de ambiente e segredos (NUNCA versione credenciais!)
 .env
-.env.local
-.DS_Store
+.env.*
+!.env.example
+!.env.template
+*.pem
+*.key
+*.crt
+*.p12
+
+# Logs e arquivos de diagnóstico
+logs/
 *.log
-.agents/
-.claude/
-.cursor/
-.devin/
-ROTEIRO_MIGRACAO_PRISMA.md
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Testes e cobertura de código
+coverage/
+.nyc_output/
+*.lcov
+test-results/
+playwright-report/
+blob-report/
+
+# Cache de ferramentas (ESLint, Prettier, Vitest, Jest, Turbo, etc.)
+.eslintcache
+.prettiercache
+.cache/
+.turbo/
+.vite/
+.vitest/
+*.tmp
+*.temp
+
+# Banco de dados local, volumes e uploads
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+uploads/
+tmp/
+temp/
+
+# Docker (ajuste se precisar ignorar overrides locais)
+docker-compose.override.yml
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDEs e editores
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Gerenciadores de pacotes / versões locais
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
