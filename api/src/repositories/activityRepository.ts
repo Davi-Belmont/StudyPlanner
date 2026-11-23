@@ -36,7 +36,8 @@ export const activityRepository = {
     });
   },
 
-  update(id: string, data: Prisma.ActivityUpdateInput) {
+  // "Unchecked" porque o app envia disciplineId direto no PUT
+  update(id: string, data: Prisma.ActivityUncheckedUpdateInput) {
     return prisma.activity.update({
       where: { id },
       data

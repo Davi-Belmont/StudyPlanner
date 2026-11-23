@@ -1,5 +1,6 @@
 import { gradeRepository } from "../repositories/gradeRepository";
 import { disciplineRepository } from "../repositories/disciplineRepository";
+import { AppError } from "../utils/AppError";
 
 interface GradeData {
   value: number;
@@ -8,19 +9,23 @@ interface GradeData {
   disciplineId: string;
 }
 
+function isValidGrade(value: unknown): value is number {
+  return (
+    typeof value === "number" &&
+    Number.isFinite(value) &&
+    value >= 0 &&
+    value <= 10
+  );
+}
+
 export const gradeService = {
   async create(data: GradeData) {
-    if (
-      typeof data.value !== "number" ||
-      !Number.isFinite(data.value) ||
-      data.value < 0 ||
-      data.value > 10
-    ) {
-      throw new Error("A nota deve estar entre 0 e 10.");
+    if (!isValidGrade(data.value)) {
+      throw new AppError("A nota deve estar entre 0 e 10.");
     }
 
     if (!data.disciplineId) {
-      throw new Error("A disciplina é obrigatória.");
+      throw new AppError("A disciplina é obrigatória.");
     }
 
     const discipline = await disciplineRepository.findById(
@@ -28,11 +33,11 @@ export const gradeService = {
     );
 
     if (!discipline) {
-      throw new Error("Disciplina não encontrada.");
+      throw new AppError("Disciplina não encontrada.", 404);
     }
 
     if (data.date && isNaN(Date.parse(data.date))) {
-      throw new Error("Data da nota inválida.");
+      throw new AppError("Data da nota inválida.");
     }
 
     return gradeRepository.create({
@@ -59,23 +64,15 @@ export const gradeService = {
     const existing = await gradeRepository.findById(id);
 
     if (!existing) {
-      throw new Error("Nota não encontrada.");
+      throw new AppError("Nota não encontrada.", 404);
     }
 
-    if (
-      data.value !== undefined &&
-      (
-        typeof data.value !== "number" ||
-        !Number.isFinite(data.value) ||
-        data.value < 0 ||
-        data.value > 10
-      )
-    ) {
-      throw new Error("A nota deve estar entre 0 e 10.");
+    if (data.value !== undefined && !isValidGrade(data.value)) {
+      throw new AppError("A nota deve estar entre 0 e 10.");
     }
 
     if (data.date && isNaN(Date.parse(data.date))) {
-      throw new Error("Data da nota inválida.");
+      throw new AppError("Data da nota inválida.");
     }
 
     if (data.disciplineId) {
@@ -84,7 +81,7 @@ export const gradeService = {
       );
 
       if (!discipline) {
-        throw new Error("Disciplina não encontrada.");
+        throw new AppError("Disciplina não encontrada.", 404);
       }
     }
 
@@ -98,7 +95,7 @@ export const gradeService = {
     const existing = await gradeRepository.findById(id);
 
     if (!existing) {
-      throw new Error("Nota não encontrada.");
+      throw new AppError("Nota não encontrada.", 404);
     }
 
     return gradeRepository.delete(id);

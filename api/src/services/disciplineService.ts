@@ -1,13 +1,13 @@
 import { disciplineRepository } from "../repositories/disciplineRepository";
+import { AppError } from "../utils/AppError";
 
 export const disciplineService = {
   async create(data: {
     name: string;
     description?: string;
   }) {
-
     if (!data.name?.trim()) {
-      throw new Error("O nome da disciplina é obrigatório.");
+      throw new AppError("O nome da disciplina é obrigatório.");
     }
 
     return disciplineRepository.create({
@@ -17,7 +17,6 @@ export const disciplineService = {
   },
 
   async findAll() {
-
     const disciplines = await disciplineRepository.findAll();
 
     return disciplines.map((discipline) => {
@@ -43,7 +42,7 @@ export const disciplineService = {
     const discipline = await disciplineRepository.findById(id);
 
     if (!discipline) {
-      throw new Error("Disciplina não encontrada.");
+      throw new AppError("Disciplina não encontrada.", 404);
     }
 
     return discipline;
@@ -59,7 +58,7 @@ export const disciplineService = {
     await this.findById(id);
 
     if (data.name !== undefined && !data.name.trim()) {
-      throw new Error("O nome da disciplina não pode ser vazio.");
+      throw new AppError("O nome da disciplina não pode ser vazio.");
     }
 
     return disciplineRepository.update(id, {

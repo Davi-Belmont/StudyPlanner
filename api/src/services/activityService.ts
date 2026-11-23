@@ -1,6 +1,7 @@
 import { ActivityStatus, ActivityType } from "@prisma/client";
 import { activityRepository } from "../repositories/activityRepository";
 import { disciplineRepository } from "../repositories/disciplineRepository";
+import { AppError } from "../utils/AppError";
 
 interface ActivityData {
   title: string;
@@ -14,11 +15,23 @@ interface ActivityData {
 export const activityService = {
   async create(data: ActivityData) {
     if (!data.title?.trim()) {
-      throw new Error("O título da atividade é obrigatório.");
+      throw new AppError("O título da atividade é obrigatório.");
     }
 
     if (!data.dueDate || isNaN(Date.parse(data.dueDate))) {
-      throw new Error("Data da atividade inválida.");
+      throw new AppError("Data da atividade inválida.");
+    }
+
+    if (!Object.values(ActivityType).includes(data.type)) {
+      throw new AppError("Tipo de atividade inválido.");
+    }
+
+    if (data.status && !Object.values(ActivityStatus).includes(data.status)) {
+      throw new AppError("Status de atividade inválido.");
+    }
+
+    if (!data.disciplineId) {
+      throw new AppError("A disciplina é obrigatória.");
     }
 
     const discipline = await disciplineRepository.findById(
@@ -26,13 +39,14 @@ export const activityService = {
     );
 
     if (!discipline) {
-      throw new Error("Disciplina não encontrada.");
+      throw new AppError("Disciplina não encontrada.", 404);
     }
 
     return activityRepository.create({
       title: data.title.trim(),
       description: data.description,
       type: data.type,
+      status: data.status,
       dueDate: new Date(data.dueDate),
       disciplineId: data.disciplineId
     });
@@ -44,32 +58,31 @@ export const activityService = {
     type?: string;
     from?: string;
     to?: string;
-    
   }) {
     const validStatuses = Object.values(ActivityStatus);
     const validTypes = Object.values(ActivityType);
 
     if (filters.status && !validStatuses.includes(filters.status as ActivityStatus)) {
-      throw new Error("Status de atividade inválido.");
+      throw new AppError("Status de atividade inválido.");
     }
 
     if (filters.type && !validTypes.includes(filters.type as ActivityType)) {
-      throw new Error("Tipo de atividade inválido.");
+      throw new AppError("Tipo de atividade inválido.");
     }
 
     if (filters.from && isNaN(Date.parse(filters.from))) {
-      throw new Error("Data inicial inválida.");
+      throw new AppError("Data inicial inválida.");
     }
 
     if (filters.to && isNaN(Date.parse(filters.to))) {
-      throw new Error("Data final inválida.");
+      throw new AppError("Data final inválida.");
     }
 
     const from = filters.from ? new Date(filters.from) : undefined;
     const to = filters.to ? new Date(filters.to) : undefined;
 
     if (from && to && from > to) {
-      throw new Error("A data inicial não pode ser posterior à data final.");
+      throw new AppError("A data inicial não pode ser posterior à data final.");
     }
 
     return activityRepository.findAll({
@@ -95,15 +108,29 @@ export const activityService = {
     const existing = await activityRepository.findById(id);
 
     if (!existing) {
-      throw new Error("Atividade não encontrada.");
+      throw new AppError("Atividade não encontrada.", 404);
     }
 
     if (data.title !== undefined && !data.title.trim()) {
-      throw new Error("O título não pode ser vazio.");
+      throw new AppError("O título não pode ser vazio.");
     }
 
     if (data.dueDate && isNaN(Date.parse(data.dueDate))) {
-      throw new Error("Data da atividade inválida.");
+      throw new AppError("Data da atividade inválida.");
+    }
+
+    if (
+      data.type !== undefined &&
+      !Object.values(ActivityType).includes(data.type)
+    ) {
+      throw new AppError("Tipo de atividade inválido.");
+    }
+
+    if (
+      data.status !== undefined &&
+      !Object.values(ActivityStatus).includes(data.status)
+    ) {
+      throw new AppError("Status de atividade inválido.");
     }
 
     if (data.disciplineId) {
@@ -112,7 +139,7 @@ export const activityService = {
       );
 
       if (!discipline) {
-        throw new Error("Disciplina não encontrada.");
+        throw new AppError("Disciplina não encontrada.", 404);
       }
     }
 
@@ -127,7 +154,7 @@ export const activityService = {
     const existing = await activityRepository.findById(id);
 
     if (!existing) {
-      throw new Error("Atividade não encontrada.");
+      throw new AppError("Atividade não encontrada.", 404);
     }
 
     return activityRepository.delete(id);
