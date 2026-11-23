@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ActivityType {
+  TASK
+  EXAM
+  ASSIGNMENT
+}
+
+enum ActivityStatus {
+  PENDING
+  COMPLETED
+}
+
+model Discipline {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime   @default(now())
+
+  activities  Activity[]
+  grades      Grade[]
+}
+
+model Activity {
+  id          String         @id @default(cuid())
+  title       String
+  description String?
+  type        ActivityType
+  status      ActivityStatus @default(PENDING)
+  dueDate     DateTime
+  disciplineId String
+  createdAt   DateTime       @default(now())
+
+  discipline  Discipline     @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
+}
+
+model Grade {
+  id          String     @id @default(cuid())
+  value       Float
+  description String?
+  date        DateTime   @default(now())
+  disciplineId String
+
+  discipline  Discipline @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
+}
