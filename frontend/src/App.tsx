@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import { AuthProvider } from "./context/AuthContext";
 import ComingSoonPage from "./pages/ComingSoonPage";
+import HomePage from "./pages/HomePage";
 
 export default function App() {
   return (
@@ -9,6 +10,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route element={<Layout />}>
+            <Route index element={<HomePage />} />
             <Route path="*" element={<ComingSoonPage />} />
           </Route>
         </Routes>
