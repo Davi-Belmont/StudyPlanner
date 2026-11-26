@@ -240,3 +240,53 @@ ul { list-style: none; margin: 0; padding: 0; }
   .toolbar { flex-wrap: wrap; }
   .toolbar__action { margin-left: 0; }
 }
+
+
+/* ---------- Tarefas ---------- */
+.tasks-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 16px; }
+.tasks-tabs { display: flex; gap: 4px; padding: 4px; background: var(--gray-soft); border-radius: 9px; }
+.tasks-tabs button { border: 0; border-radius: 7px; background: transparent; padding: 8px 13px; color: var(--muted); font-weight: 600; }
+.tasks-tabs button.is-active { background: #fff; color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.tasks-filters { display: flex; gap: 12px; margin-bottom: 22px; }
+.tasks-filters .search { flex: 1; width: auto; }
+.tasks-filters > .input { width: 190px; }
+.tasks-group { margin-bottom: 22px; }
+.tasks-group h2 { font-size: 14px; color: var(--muted); margin-bottom: 8px; }
+.tasks-list { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 0 18px; }
+.tasks-item { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-top: 1px solid var(--border); }
+.tasks-item:first-child { border-top: 0; }
+.tasks-item__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.tasks-item__main > span { display: flex; align-items: center; gap: 5px; }
+.tasks-item__main small { color: var(--muted); }
+.tasks-item.is-done .tasks-item__main > strong { color: var(--muted); text-decoration: line-through; }
+.tasks-item__actions { display: flex; gap: 2px; }
+
+/* ---------- Perfil e notas ---------- */
+.profile-hero { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+.profile-avatar { width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; background: var(--primary-soft); color: var(--primary); font-size: 18px; font-weight: 700; }
+.profile-hero h2 { font-size: 18px; margin-bottom: 4px; }
+.profile-hero p { color: var(--muted); }
+.profile-hero__icon { margin-left: auto; color: var(--muted); }
+.profile-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 26px; }
+.profile-stat { display: flex; flex-direction: column; gap: 8px; }
+.profile-stat svg { color: var(--primary); }
+.profile-stat span { color: var(--muted); font-size: 13px; }
+.profile-stat strong { font-size: 25px; }
+.profile-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.profile-section-heading h2 { font-size: 18px; margin-bottom: 4px; }
+.profile-disciplines { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.profile-discipline__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.profile-discipline__top h3 { font-size: 15px; margin-bottom: 5px; }
+.profile-average { font-size: 22px; }
+.profile-grade-list { margin-top: 12px; }
+.profile-grade-row { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-top: 1px solid var(--border); }
+.profile-grade-row > div { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.profile-grade-row > div span { color: var(--muted); font-size: 12px; }
+@media (max-width: 800px) {
+  .tasks-toolbar, .profile-section-heading { align-items: stretch; flex-direction: column; }
+  .tasks-filters { flex-direction: column; }
+  .tasks-filters > .input { width: 100%; }
+  .profile-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tasks-item { flex-wrap: wrap; }
+  .tasks-item__main { min-width: calc(100% - 48px); }
+}
