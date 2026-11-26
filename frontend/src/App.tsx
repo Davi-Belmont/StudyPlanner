@@ -3,6 +3,7 @@ import Layout from "./components/Layout";
 import { AuthProvider } from "./context/AuthContext";
 import ComingSoonPage from "./pages/ComingSoonPage";
 import HomePage from "./pages/HomePage";
+import DisciplinesPage from "./pages/DisciplinesPage";
 
 export default function App() {
   return (
@@ -11,6 +12,7 @@ export default function App() {
         <Routes>
           <Route element={<Layout />}>
             <Route index element={<HomePage />} />
+            <Route path="disciplinas" element={<DisciplinesPage />} />
             <Route path="*" element={<ComingSoonPage />} />
           </Route>
         </Routes>
