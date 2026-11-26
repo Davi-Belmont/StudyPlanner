@@ -7,6 +7,9 @@ import { swaggerSpec } from "./config/swagger";
 
 import { AppError } from "./utils/AppError";
 
+import { authMiddleware } from "./middlewares/authMiddleware";
+import authRoutes from "./routes/authRoutes";
+
 import disciplineRoutes from "./routes/disciplineRoutes";
 import activityRoutes from "./routes/activityRoutes";
 import gradeRoutes from "./routes/gradeRoutes";
@@ -33,6 +36,15 @@ app.use("/disciplines", disciplineRoutes);
 app.use("/activities", activityRoutes);
 app.use("/grades", gradeRoutes);
 app.use("/dashboard", dashboardRoutes);
+
+// Rotas públicas (/register, /login) e /me (protegida internamente)
+app.use(authRoutes);
+
+// Rotas protegidas (exigem token JWT)
+app.use("/disciplines", authMiddleware, disciplineRoutes);
+app.use("/activities", authMiddleware, activityRoutes);
+app.use("/grades", authMiddleware, gradeRoutes);
+app.use("/dashboard", authMiddleware, dashboardRoutes);
 
 // Rota inexistente
 app.use((req: Request, res: Response) => {

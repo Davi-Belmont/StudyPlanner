@@ -91,6 +91,73 @@ const gradeModel = registry.register(
   })
 );
 
+const registerSchema = z.object({
+  nome: z.string().min(2).openapi({ example: "Maria Silva" }),
+  email: z.string().email().openapi({ example: "maria@email.com" }),
+  senha: z.string().min(8).openapi({ example: "minhasenha123" }),
+});
+
+const loginSchema = z.object({
+  email: z.string().email().openapi({ example: "maria@email.com" }),
+  senha: z.string().openapi({ example: "minhasenha123" }),
+});
+
+const usuarioModel = registry.register(
+  "Usuario",
+  z.object({
+    id: z.string(),
+    nome: z.string(),
+    email: z.string(),
+    createdAt: z.string().datetime(),
+  })
+);
+
+const authResponse = z.object({ usuario: usuarioModel, token: z.string() });
+
+registry.registerComponent("securitySchemes", "bearerAuth", {
+  type: "http",
+  scheme: "bearer",
+  bearerFormat: "JWT",
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/register",
+  summary: "Cadastrar usuário",
+  tags: ["Autenticação"],
+  request: { body: jsonBody(registerSchema) },
+  responses: {
+    201: jsonResponse("Usuário criado", authResponse),
+    400: jsonResponse("Dados inválidos"),
+    409: jsonResponse("E-mail já cadastrado"),
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/login",
+  summary: "Fazer login",
+  tags: ["Autenticação"],
+  request: { body: jsonBody(loginSchema) },
+  responses: {
+    200: jsonResponse("Login realizado", authResponse),
+    400: jsonResponse("Dados inválidos"),
+    401: jsonResponse("E-mail ou senha incorretos"),
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/me",
+  summary: "Dados do usuário autenticado",
+  tags: ["Autenticação"],
+  security: [{ bearerAuth: [] }],
+  responses: {
+    200: jsonResponse("Usuário autenticado", usuarioModel),
+    401: jsonResponse("Token inválido ou ausente"),
+  },
+});
+
 // -------------------------------------------------------------
 // 4. Disciplinas
 // -------------------------------------------------------------
