@@ -17,7 +17,7 @@ export default function HomePage() {
   const [creating, setCreating] = useState(false);
 
   const { data, error, loading, reload } = useLoad(async () => {
-    // /dashboard não conta atrasadas; o semáforo usa todas as pendentes de /activities
+    // /dashboard devolve contagem e próximas (incluindo atrasadas); o semáforo usa todas as pendentes de /activities
     const [dashboard, pending] = await Promise.all([
       dashboardService.get(),
       activityService.list({ status: "PENDING" })

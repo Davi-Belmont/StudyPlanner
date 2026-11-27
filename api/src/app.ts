@@ -6,10 +6,11 @@ import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger";
 
 import { AppError } from "./utils/AppError";
-
+import { asyncHandler } from "./utils/asyncHandler";
 import { authMiddleware } from "./middlewares/authMiddleware";
-import authRoutes from "./routes/authRoutes";
+import { authController } from "./controllers/authController";
 
+import authRoutes from "./routes/authRoutes";
 import disciplineRoutes from "./routes/disciplineRoutes";
 import activityRoutes from "./routes/activityRoutes";
 import gradeRoutes from "./routes/gradeRoutes";
@@ -17,7 +18,13 @@ import dashboardRoutes from "./routes/dashboardRoutes";
 
 const app = express();
 
-app.use(cors());
+// CORS restrito às origens configuradas (padrão: Vite em desenvolvimento)
+const allowedOrigins = (process.env.CORS_ORIGIN ?? "http://localhost:5173")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 
 // Documentação Swagger
@@ -31,16 +38,11 @@ app.get("/health", (req: Request, res: Response) => {
   });
 });
 
-// Rotas
-app.use("/disciplines", disciplineRoutes);
-app.use("/activities", activityRoutes);
-app.use("/grades", gradeRoutes);
-app.use("/dashboard", dashboardRoutes);
-
-// Rotas públicas (/register, /login) e /me (protegida internamente)
-app.use(authRoutes);
+// Rotas públicas
+app.use("/auth", authRoutes);
 
 // Rotas protegidas (exigem token JWT)
+app.get("/me", authMiddleware, asyncHandler(authController.me));
 app.use("/disciplines", authMiddleware, disciplineRoutes);
 app.use("/activities", authMiddleware, activityRoutes);
 app.use("/grades", authMiddleware, gradeRoutes);

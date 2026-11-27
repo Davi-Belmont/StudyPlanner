@@ -1,4 +1,3 @@
-
 import {
   createContext,
   useContext,
@@ -15,6 +14,7 @@ interface AuthContextValue {
   user: Usuario | null;
   loading: boolean;
   login: (email: string, senha: string) => Promise<void>;
+  register: (nome: string, email: string, senha: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -22,6 +22,7 @@ const AuthContext = createContext<AuthContextValue>({
   user: null,
   loading: true,
   login: async () => {},
+  register: async () => {},
   logout: () => {}
 });
 
@@ -52,13 +53,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(resposta.usuario);
   }
 
+  async function register(nome: string, email: string, senha: string) {
+    const resposta = await authService.register({ nome, email, senha });
+
+    tokenStorage.set(resposta.token);
+    setUser(resposta.usuario);
+  }
+
   function logout() {
     tokenStorage.clear();
     setUser(null);
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

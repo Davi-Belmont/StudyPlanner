@@ -3,7 +3,7 @@ import prisma from "../config/prisma";
 export const gradeRepository = {
   create(data: {
     value: number;
-    description?: string;
+    description?: string | null;
     date?: Date;
     disciplineId: string;
   }) {

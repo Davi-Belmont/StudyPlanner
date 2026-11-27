@@ -18,44 +18,49 @@ enum ActivityStatus {
   COMPLETED
 }
 
+model User {
+  id          String       @id @default(cuid())
+  nome        String
+  email       String       @unique
+  senhaHash   String
+  createdAt   DateTime     @default(now())
+
+  disciplines Discipline[]
+}
+
 model Discipline {
   id          String     @id @default(cuid())
   name        String
   description String?
   createdAt   DateTime   @default(now())
+  userId      String
 
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   activities  Activity[]
   grades      Grade[]
+
+  @@index([userId])
 }
 
 model Activity {
-  id          String         @id @default(cuid())
-  title       String
-  description String?
-  type        ActivityType
-  status      ActivityStatus @default(PENDING)
-  dueDate     DateTime
+  id           String         @id @default(cuid())
+  title        String
+  description  String?
+  type         ActivityType
+  status       ActivityStatus @default(PENDING)
+  dueDate      DateTime
   disciplineId String
-  createdAt   DateTime       @default(now())
+  createdAt    DateTime       @default(now())
 
-  discipline  Discipline     @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
+  discipline   Discipline     @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
 }
 
 model Grade {
-  id          String     @id @default(cuid())
-  value       Float
-  description String?
-  date        DateTime   @default(now())
+  id           String     @id @default(cuid())
+  value        Float
+  description  String?
+  date         DateTime   @default(now())
   disciplineId String
 
-  discipline  Discipline @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
-}
-
-model Usuario {
-  id        String   @id @default(cuid())
-  nome      String
-  email     String   @unique
-  senha     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  discipline   Discipline @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
 }

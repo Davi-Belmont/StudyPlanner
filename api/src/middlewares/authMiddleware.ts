@@ -1,22 +1,23 @@
-import { Request, Response, NextFunction } from "express";
+import { NextFunction, Request, Response } from "express";
 import { authService } from "../services/authService";
 import { AppError } from "../utils/AppError";
 
-// Exige o header:  Authorization: Bearer <token>
-export function authMiddleware(req: Request, _res: Response, next: NextFunction) {
+// Exige "Authorization: Bearer <token>" e guarda o id do usuário em res.locals.userId
+export function authMiddleware(req: Request, res: Response, next: NextFunction) {
   const header = req.headers.authorization;
 
-  if (!header) {
+  if (!header?.startsWith("Bearer ")) {
     throw new AppError("Token não informado.", 401);
   }
 
-  const [scheme, token] = header.split(" ");
+  let userId: string;
 
-  if (scheme !== "Bearer" || !token) {
-    throw new AppError("Formato do token inválido. Use: Bearer <token>.", 401);
+  try {
+    userId = authService.verifyToken(header.slice(7));
+  } catch {
+    throw new AppError("Token inválido ou expirado.", 401);
   }
 
-  req.usuarioId = authService.verifyToken(token);
-
-  return next();
+  res.locals.userId = userId;
+  next();
 }

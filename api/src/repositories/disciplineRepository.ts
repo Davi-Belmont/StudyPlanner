@@ -1,23 +1,28 @@
 import prisma from "../config/prisma";
 
 export const disciplineRepository = {
-  create(data: {
-    name: string;
-    description?: string;
-  }) {
-    return prisma.discipline.create({ data });
+  create(
+    userId: string,
+    data: {
+      name: string;
+      description?: string | null;
+    }
+  ) {
+    return prisma.discipline.create({ data: { ...data, userId } });
   },
 
-  findAll() {
+  findAll(userId: string) {
     return prisma.discipline.findMany({
+      where: { userId },
       include: { grades: true },
       orderBy: { createdAt: "desc" }
     });
   },
 
-  findById(id: string) {
-    return prisma.discipline.findUnique({
-      where: { id },
+  // Só devolve se a disciplina for do usuário
+  findById(id: string, userId: string) {
+    return prisma.discipline.findFirst({
+      where: { id, userId },
       include: {
         activities: true,
         grades: true
@@ -25,6 +30,7 @@ export const disciplineRepository = {
     });
   },
 
+  // update/delete só são chamados depois de findById(id, userId) no service
   update(
     id: string,
     data: {
@@ -44,7 +50,7 @@ export const disciplineRepository = {
     });
   },
 
-  count() {
-    return prisma.discipline.count();
+  count(userId: string) {
+    return prisma.discipline.count({ where: { userId } });
   }
 };

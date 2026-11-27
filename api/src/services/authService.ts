@@ -1,119 +1,94 @@
 import bcrypt from "bcryptjs";
-import jwt, { SignOptions } from "jsonwebtoken";
-import { Prisma, Usuario } from "@prisma/client";
-
-import prisma from "../config/prisma";
+import jwt from "jsonwebtoken";
+import { User } from "@prisma/client";
+import { userRepository } from "../repositories/userRepository";
 import { AppError } from "../utils/AppError";
-import { LoginInput, RegisterInput } from "../schemas/authSchema";
+import { requiredText } from "../utils/validators";
 
-const SALT_ROUNDS = 10;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MIN_PASSWORD_LENGTH = 6;
 
-// Hash falso para manter o tempo de resposta parecido quando o e-mail não
-// existe (dificulta descobrir quais e-mails estão cadastrados).
-const DUMMY_HASH = bcrypt.hashSync("senha-invalida-para-timing", SALT_ROUNDS);
-
-function getJwtConfig() {
+function getSecret(): string {
   const secret = process.env.JWT_SECRET;
 
   if (!secret) {
-    throw new Error("JWT_SECRET não está definido no .env");
+    throw new Error("JWT_SECRET não definido.");
   }
 
+  return secret;
+}
+
+// Nunca devolve o hash da senha
+function toPublicUser(user: User) {
   return {
-    secret,
-    expiresIn: (process.env.JWT_EXPIRES_IN || "7d") as SignOptions["expiresIn"]
+    id: user.id,
+    nome: user.nome,
+    email: user.email,
+    createdAt: user.createdAt
   };
 }
 
-function signToken(usuarioId: string) {
-  const { secret, expiresIn } = getJwtConfig();
-
-  return jwt.sign({}, secret, { subject: usuarioId, expiresIn });
-}
-
-// Nunca devolver o hash da senha para o cliente
-function toPublicUser(usuario: Usuario) {
-  return {
-    id: usuario.id,
-    nome: usuario.nome,
-    email: usuario.email,
-    createdAt: usuario.createdAt
-  };
+function signToken(userId: string) {
+  return jwt.sign({ sub: userId }, getSecret(), { expiresIn: "7d" });
 }
 
 export const authService = {
-  async register(data: RegisterInput) {
-    const existing = await prisma.usuario.findUnique({
-      where: { email: data.email }
-    });
+  async register(data: { nome?: unknown; email?: unknown; senha?: unknown }) {
+    const nome = requiredText(data.nome, "O nome é obrigatório.", 120);
 
-    if (existing) {
-      throw new AppError("Este e-mail já está cadastrado.", 409);
+    if (typeof data.email !== "string" || !EMAIL_REGEX.test(data.email.trim())) {
+      throw new AppError("E-mail inválido.");
     }
 
-    const senhaHash = await bcrypt.hash(data.senha, SALT_ROUNDS);
-
-    try {
-      const usuario = await prisma.usuario.create({
-        data: { nome: data.nome, email: data.email, senha: senhaHash }
-      });
-
-      return { usuario: toPublicUser(usuario), token: signToken(usuario.id) };
-    } catch (err) {
-      // Duas requisições simultâneas com o mesmo e-mail
-      if (
-        err instanceof Prisma.PrismaClientKnownRequestError &&
-        err.code === "P2002"
-      ) {
-        throw new AppError("Este e-mail já está cadastrado.", 409);
-      }
-      throw err;
+    if (typeof data.senha !== "string" || data.senha.length < MIN_PASSWORD_LENGTH) {
+      throw new AppError(`A senha deve ter no mínimo ${MIN_PASSWORD_LENGTH} caracteres.`);
     }
+
+    const email = data.email.trim().toLowerCase();
+
+    if (await userRepository.findByEmail(email)) {
+      throw new AppError("Já existe uma conta com este e-mail.", 409);
+    }
+
+    const senhaHash = await bcrypt.hash(data.senha, 10);
+    const user = await userRepository.create({ nome, email, senhaHash });
+
+    return { usuario: toPublicUser(user), token: signToken(user.id) };
   },
 
-  async login(data: LoginInput) {
-    const usuario = await prisma.usuario.findUnique({
-      where: { email: data.email }
-    });
-
-    const senhaCorreta = await bcrypt.compare(
-      data.senha,
-      usuario ? usuario.senha : DUMMY_HASH
-    );
-
-    // Mensagem genérica: não revela se o e-mail existe ou se a senha está errada
-    if (!usuario || !senhaCorreta) {
-      throw new AppError("E-mail ou senha incorretos.", 401);
+  async login(data: { email?: unknown; senha?: unknown }) {
+    if (typeof data.email !== "string" || typeof data.senha !== "string") {
+      throw new AppError("Informe e-mail e senha.");
     }
 
-    return { usuario: toPublicUser(usuario), token: signToken(usuario.id) };
+    const user = await userRepository.findByEmail(data.email.trim().toLowerCase());
+    const valid = user ? await bcrypt.compare(data.senha, user.senhaHash) : false;
+
+    // Mesma mensagem para e-mail inexistente e senha errada
+    if (!user || !valid) {
+      throw new AppError("E-mail ou senha inválidos.", 401);
+    }
+
+    return { usuario: toPublicUser(user), token: signToken(user.id) };
   },
 
-  async me(usuarioId: string) {
-    const usuario = await prisma.usuario.findUnique({
-      where: { id: usuarioId }
-    });
+  async me(userId: string) {
+    const user = await userRepository.findById(userId);
 
-    if (!usuario) {
-      throw new AppError("Usuário não encontrado.", 404);
+    if (!user) {
+      throw new AppError("Usuário não encontrado.", 401);
     }
 
-    return toPublicUser(usuario);
+    return toPublicUser(user);
   },
 
   verifyToken(token: string): string {
-    const { secret } = getJwtConfig();
+    const payload = jwt.verify(token, getSecret());
 
-    try {
-      const payload = jwt.verify(token, secret);
-
-      if (typeof payload === "string" || !payload.sub) {
-        throw new Error("payload inválido");
-      }
-
-      return payload.sub;
-    } catch {
-      throw new AppError("Token inválido ou expirado.", 401);
+    if (typeof payload === "string" || typeof payload.sub !== "string") {
+      throw new Error("Token inválido.");
     }
+
+    return payload.sub;
   }
 };

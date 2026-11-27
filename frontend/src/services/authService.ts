@@ -1,7 +1,7 @@
 import type { Usuario } from "../types/api";
 import { http } from "./http";
 
-interface LoginResponse {
+interface AuthResponse {
   usuario: Usuario;
   token: string;
 }
@@ -11,9 +11,14 @@ interface LoginData {
   senha: string;
 }
 
+interface RegisterData extends LoginData {
+  nome: string;
+}
+
 export const authService = {
   me: () => http.get<Usuario>("/me"),
 
-  login: (data: LoginData) =>
-    http.post<LoginResponse>("/auth/login", data)
+  login: (data: LoginData) => http.post<AuthResponse>("/auth/login", data),
+
+  register: (data: RegisterData) => http.post<AuthResponse>("/auth/register", data)
 };

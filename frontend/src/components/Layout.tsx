@@ -1,4 +1,3 @@
-import { Book, Calendar, GraduationCap, Home, ListChecks, User } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { initials } from "../utils/format";

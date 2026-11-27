@@ -75,7 +75,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    // Token enviado e recusado: sessão expirada. A tela de login ainda será criada.
+    // Token enviado e recusado: sessão expirada. Volta para a tela de login.
     if (response.status === 401 && token) {
       tokenStorage.clear();
       window.location.assign("/login");

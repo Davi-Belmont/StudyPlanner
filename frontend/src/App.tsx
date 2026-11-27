@@ -1,14 +1,14 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import ComingSoonPage from "./pages/ComingSoonPage";
-import HomePage from "./pages/HomePage";
-import DisciplinesPage from "./pages/DisciplinesPage";
 import DisciplineDetailPage from "./pages/DisciplineDetailPage";
-import TasksPage from "./pages/TasksPage";
+import DisciplinesPage from "./pages/DisciplinesPage";
+import HomePage from "./pages/HomePage";
+import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
-import LoginPage from "./Pages/LoginPage";
-import ProtectedRoute from "./components/ProtectedRoute";
+import TasksPage from "./pages/TasksPage";
 
 export default function App() {
   return (
@@ -17,13 +17,13 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
 
-     <Route
-  element={
-    <ProtectedRoute>
-      <Layout />
-    </ProtectedRoute>
-  }
->
+          <Route
+            element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
             <Route index element={<HomePage />} />
             <Route path="disciplinas" element={<DisciplinesPage />} />
             <Route path="disciplinas/:id" element={<DisciplineDetailPage />} />

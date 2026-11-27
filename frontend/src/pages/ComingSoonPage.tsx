@@ -1,9 +1,8 @@
 import { useLocation } from "react-router-dom";
 
+// Só telas que ainda NÃO existem entram aqui (tarefas e perfil já foram implementadas)
 const titles: Record<string, string> = {
-  "/calendario": "Calendário",
-  "/tarefas": "Tarefas",
-  "/perfil": "Perfil e notas"
+  "/calendario": "Calendário"
 };
 
 // Espaço reservado para as telas que ainda serão implementadas

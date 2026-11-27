@@ -14,9 +14,10 @@ export const activityRepository = {
     return prisma.activity.create({ data });
   },
 
-  findAll(filters: ActivityFilters = {}) {
+  findAll(userId: string, filters: ActivityFilters = {}) {
     return prisma.activity.findMany({
       where: {
+        discipline: { userId },
         disciplineId: filters.disciplineId,
         status: filters.status,
         type: filters.type,
@@ -30,13 +31,14 @@ export const activityRepository = {
     });
   },
 
-  findById(id: string) {
-    return prisma.activity.findUnique({
-      where: { id }
+  // Só devolve se a atividade pertencer a uma disciplina do usuário
+  findById(id: string, userId: string) {
+    return prisma.activity.findFirst({
+      where: { id, discipline: { userId } }
     });
   },
 
-  // "Unchecked" porque o app envia disciplineId direto no PUT
+  // update/delete só são chamados depois de findById(id, userId) no service
   update(id: string, data: Prisma.ActivityUncheckedUpdateInput) {
     return prisma.activity.update({
       where: { id },
@@ -50,17 +52,18 @@ export const activityRepository = {
     });
   },
 
-  countPending() {
+  countPending(userId: string) {
     return prisma.activity.count({
-      where: { status: "PENDING" }
+      where: { status: "PENDING", discipline: { userId } }
     });
   },
 
-  findUpcoming() {
+  // Pendentes por data de entrega. Inclui atrasadas (aparecem primeiro).
+  findUpcoming(userId: string) {
     return prisma.activity.findMany({
       where: {
         status: "PENDING",
-        dueDate: { gte: new Date() }
+        discipline: { userId }
       },
       include: { discipline: true },
       orderBy: { dueDate: "asc" },

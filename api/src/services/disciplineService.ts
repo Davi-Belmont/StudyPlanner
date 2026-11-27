@@ -1,31 +1,23 @@
 import { disciplineRepository } from "../repositories/disciplineRepository";
 import { AppError } from "../utils/AppError";
+import { optionalText, requiredText } from "../utils/validators";
 
 export const disciplineService = {
-  async create(data: {
-    name: string;
-    description?: string;
-  }) {
-    if (!data.name?.trim()) {
-      throw new AppError("O nome da disciplina é obrigatório.");
-    }
+  async create(userId: string, data: { name?: unknown; description?: unknown }) {
+    const name = requiredText(data.name, "O nome da disciplina é obrigatório.");
+    const description = optionalText(data.description, "A descrição");
 
-    return disciplineRepository.create({
-      name: data.name.trim(),
-      description: data.description
-    });
+    return disciplineRepository.create(userId, { name, description });
   },
 
-  async findAll() {
-    const disciplines = await disciplineRepository.findAll();
+  async findAll(userId: string) {
+    const disciplines = await disciplineRepository.findAll(userId);
 
     return disciplines.map((discipline) => {
       const average =
         discipline.grades.length > 0
-          ? discipline.grades.reduce(
-              (sum, grade) => sum + grade.value,
-              0
-            ) / discipline.grades.length
+          ? discipline.grades.reduce((sum, grade) => sum + grade.value, 0) /
+            discipline.grades.length
           : null;
 
       return {
@@ -38,9 +30,10 @@ export const disciplineService = {
     });
   },
 
-  async findById(id: string) {
-    const discipline = await disciplineRepository.findById(id);
+  async findById(id: string, userId: string) {
+    const discipline = await disciplineRepository.findById(id, userId);
 
+    // Disciplina de outro usuário também responde 404
     if (!discipline) {
       throw new AppError("Disciplina não encontrada.", 404);
     }
@@ -50,25 +43,25 @@ export const disciplineService = {
 
   async update(
     id: string,
-    data: {
-      name?: string;
-      description?: string | null;
-    }
+    userId: string,
+    data: { name?: unknown; description?: unknown }
   ) {
-    await this.findById(id);
+    await this.findById(id, userId);
 
-    if (data.name !== undefined && !data.name.trim()) {
-      throw new AppError("O nome da disciplina não pode ser vazio.");
+    const payload: { name?: string; description?: string | null } = {};
+
+    if (data.name !== undefined) {
+      payload.name = requiredText(data.name, "O nome da disciplina não pode ser vazio.");
     }
 
-    return disciplineRepository.update(id, {
-      ...data,
-      name: data.name?.trim()
-    });
+    const description = optionalText(data.description, "A descrição");
+    if (description !== undefined) payload.description = description;
+
+    return disciplineRepository.update(id, payload);
   },
 
-  async delete(id: string) {
-    await this.findById(id);
+  async delete(id: string, userId: string) {
+    await this.findById(id, userId);
 
     return disciplineRepository.delete(id);
   }

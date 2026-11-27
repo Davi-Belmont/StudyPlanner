@@ -2,17 +2,17 @@ import { disciplineRepository } from "../repositories/disciplineRepository";
 import { activityRepository } from "../repositories/activityRepository";
 
 export const dashboardService = {
-  async getDashboard() {
+  async getDashboard(userId: string) {
     const [
       disciplineCount,
       pendingActivities,
       upcomingActivities,
       disciplines
     ] = await Promise.all([
-      disciplineRepository.count(),
-      activityRepository.countPending(),
-      activityRepository.findUpcoming(),
-      disciplineRepository.findAll()
+      disciplineRepository.count(userId),
+      activityRepository.countPending(userId),
+      activityRepository.findUpcoming(userId),
+      disciplineRepository.findAll(userId)
     ]);
 
     const averages = disciplines.map((discipline) => {

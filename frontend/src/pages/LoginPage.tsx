@@ -1,37 +1,79 @@
-
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../Context/AuthContext";
-import { getErrorMessage } from "../Services/http";
+import { useEffect, useState, type FormEvent } from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { getErrorMessage, http } from "../services/http";
 import "./LoginPage.css";
 
+type Mode = "login" | "register";
+type ServerStatus = "checking" | "online" | "offline";
+
+const statusLabel: Record<ServerStatus, string> = {
+  checking: "Verificando servidor...",
+  online: "Servidor online",
+  offline: "Servidor offline"
+};
+
+const statusColor: Record<ServerStatus, string> = {
+  checking: "#d97706",
+  online: "#22a06b",
+  offline: "#dc2626"
+};
+
 export default function LoginPage() {
+  const { login, register, user, loading } = useAuth();
+
+  const [mode, setMode] = useState<Mode>("login");
+  const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
+  const [server, setServer] = useState<ServerStatus>("checking");
 
-  const { login, user, loading } = useAuth();
-const navigate = useNavigate();
-if (loading) {
-  return <p>Verificando autenticação...</p>;
-}
+  // Estado real do servidor (antes o texto "Servidor online" era fixo)
+  useEffect(() => {
+    let active = true;
 
-if (user) {
-  navigate("/");
-  return null;
-}
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    http
+      .get<{ status: string }>("/health")
+      .then(() => active && setServer("online"))
+      .catch(() => active && setServer("offline"));
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (loading) {
+    return <p>Verificando autenticação...</p>;
+  }
+
+  // Redireciona sem chamar navigate() durante o render
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
+
+  const isRegister = mode === "register";
+
+  function toggleMode() {
+    setMode(isRegister ? "login" : "register");
+    setErro("");
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setErro("");
     setCarregando(true);
 
     try {
-      await login(email, senha);
-      navigate("/");
+      if (isRegister) {
+        await register(nome, email, senha);
+      } else {
+        await login(email, senha);
+      }
+      // Ao definir o usuário no contexto, o <Navigate> acima leva para "/"
     } catch (error) {
       setErro(getErrorMessage(error));
-    } finally {
       setCarregando(false);
     }
   }
@@ -46,13 +88,29 @@ if (user) {
         </header>
 
         <div className="login-welcome">
-          <h2>Bem-vindo de volta</h2>
+          <h2>{isRegister ? "Crie sua conta" : "Bem-vindo de volta"}</h2>
           <p>
-            Entre para acessar suas disciplinas, tarefas e notas.
+            {isRegister
+              ? "Cadastre-se para organizar suas disciplinas, tarefas e notas."
+              : "Entre para acessar suas disciplinas, tarefas e notas."}
           </p>
         </div>
 
         <form onSubmit={handleSubmit}>
+          {isRegister && (
+            <>
+              <label htmlFor="nome">Nome</label>
+              <input
+                id="nome"
+                type="text"
+                placeholder="Seu nome completo"
+                value={nome}
+                onChange={(event) => setNome(event.target.value)}
+                required
+              />
+            </>
+          )}
+
           <label htmlFor="email">E-mail</label>
           <input
             id="email"
@@ -67,26 +125,27 @@ if (user) {
           <input
             id="senha"
             type="password"
-            placeholder="Digite sua senha"
+            placeholder={isRegister ? "Mínimo de 6 caracteres" : "Digite sua senha"}
             value={senha}
             onChange={(event) => setSenha(event.target.value)}
+            minLength={isRegister ? 6 : undefined}
             required
           />
 
           {erro && <p className="login-error">{erro}</p>}
 
           <button type="submit" className="login-button" disabled={carregando}>
-            {carregando ? "Entrando..." : "Entrar"}
+            {carregando ? "Aguarde..." : isRegister ? "Criar conta" : "Entrar"}
           </button>
         </form>
 
-        <button type="button" className="register-button">
-          Criar conta
+        <button type="button" className="register-button" onClick={toggleMode}>
+          {isRegister ? "Já tenho conta" : "Criar conta"}
         </button>
 
         <footer className="login-footer">
-          <span className="status-indicator"></span>
-          Servidor online
+          <span className="status-indicator" style={{ background: statusColor[server] }}></span>
+          {statusLabel[server]}
         </footer>
       </section>
     </main>
