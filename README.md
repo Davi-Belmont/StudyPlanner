@@ -1,3 +1,7 @@
+# Apresentação
+
+https://github.com/user-attachments/assets/8ac6d002-d82d-4275-b254-0ad93ac0f401
+
 # StudyPlanner
 
 Organizador acadêmico para controlar disciplinas, tarefas/provas/trabalhos e notas.
