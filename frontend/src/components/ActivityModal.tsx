@@ -10,6 +10,7 @@ interface ActivityModalProps {
   activity?: Activity; // se informado, modo edição
   disciplines: DisciplineOption[];
   fixedDisciplineId?: string; // esconde o seletor de disciplina
+  defaultDate?: Date; // data inicial ao criar (ex.: dia clicado no calendário)
   onClose: () => void;
   onSaved: () => void | Promise<void>;
 }
@@ -20,6 +21,7 @@ export default function ActivityModal({
   activity,
   disciplines,
   fixedDisciplineId,
+  defaultDate,
   onClose,
   onSaved
 }: ActivityModalProps) {
@@ -31,7 +33,7 @@ export default function ActivityModal({
   const [disciplineId, setDisciplineId] = useState(
     activity?.disciplineId ?? fixedDisciplineId ?? disciplines[0]?.id ?? ""
   );
-  const [date, setDate] = useState(due ? toDateInput(due) : toDateInput(new Date()));
+   const [date, setDate] = useState(due ? toDateInput(due) : toDateInput(defaultDate ?? new Date()));
   const [time, setTime] = useState(due ? toTimeInput(due) : "23:59");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);

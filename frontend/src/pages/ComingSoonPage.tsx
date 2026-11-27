@@ -1,9 +1,7 @@
 import { useLocation } from "react-router-dom";
 
-// Só telas que ainda NÃO existem entram aqui (tarefas e perfil já foram implementadas)
-const titles: Record<string, string> = {
-  "/calendario": "Calendário"
-};
+// Telas que ainda não existem entram aqui. Hoje todas já foram implementadas.
+const titles: Record<string, string> = {};
 
 // Espaço reservado para as telas que ainda serão implementadas
 export default function ComingSoonPage() {

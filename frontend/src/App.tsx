@@ -10,6 +10,8 @@ import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
 import TasksPage from "./pages/TasksPage";
 
+import CalendarPage from "./pages/CalendarPage";
+
 export default function App() {
   return (
     <AuthProvider>
@@ -30,6 +32,9 @@ export default function App() {
             <Route path="tarefas" element={<TasksPage />} />
             <Route path="perfil" element={<ProfilePage />} />
             <Route path="*" element={<ComingSoonPage />} />
+            <Route path="tarefas" element={<TasksPage />} />
+            <Route path="calendario" element={<CalendarPage />} />
+            <Route path="perfil" element={<ProfilePage />} />
           </Route>
         </Routes>
       </BrowserRouter>
