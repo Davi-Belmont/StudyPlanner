@@ -91,7 +91,3 @@ Acesse `http://localhost:5173`, clique em **Criar conta** e comece a usar.
 | Variável | Descrição | Exemplo |
 |---|---|---|
 | `VITE_API_URL` | URL da API | `http://localhost:3000` |
-
-## Rotas da API
-
-Todas, exceto
