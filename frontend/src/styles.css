@@ -290,3 +290,15 @@ ul { list-style: none; margin: 0; padding: 0; }
   .tasks-item { flex-wrap: wrap; }
   .tasks-item__main { min-width: calc(100% - 48px); }
 }
+.logout-button {
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.logout-button:hover {
+  background: rgba(128, 128, 128, 0.15);
+}

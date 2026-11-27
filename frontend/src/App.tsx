@@ -7,13 +7,23 @@ import DisciplinesPage from "./pages/DisciplinesPage";
 import DisciplineDetailPage from "./pages/DisciplineDetailPage";
 import TasksPage from "./pages/TasksPage";
 import ProfilePage from "./pages/ProfilePage";
+import LoginPage from "./Pages/LoginPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route element={<Layout />}>
+          <Route path="/login" element={<LoginPage />} />
+
+     <Route
+  element={
+    <ProtectedRoute>
+      <Layout />
+    </ProtectedRoute>
+  }
+>
             <Route index element={<HomePage />} />
             <Route path="disciplinas" element={<DisciplinesPage />} />
             <Route path="disciplinas/:id" element={<DisciplineDetailPage />} />
